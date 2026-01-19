@@ -23,8 +23,8 @@ load_dotenv()
 class S2Api:
     BASE_URL = "https://api.semanticscholar.org/graph/v1"
     API_KEY = os.getenv("API_KEY")
-    RETRY_DURATION = 2
-    LIMIT_DELAY = 2
+    RETRY_DURATION = 5
+    LIMIT_DELAY = 5
     # _author_papers: Dict[str, List['IPaper']] = {}
     __cache: Dict[str, Dict[str, Dict]] = {}  # 双下划线实现名称重整，增强封装性
     __cache_expire: int = 36000  # 10小时过期
@@ -136,7 +136,7 @@ class S2Api:
                 return cached_data
 
         url = f"{self.BASE_URL}/paper/{id}/citations"
-        params = {"fields": "title,abstract,contexts,intents,isInfluential,authors"}
+        params = {"fields": "title,abstract,year,contexts,intents,isInfluential,authors"}
         try:
             resp = requests.get(url, params=params, headers={"x-api-key": self.API_KEY})
             if resp.status_code == 200:
