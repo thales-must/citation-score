@@ -42,6 +42,14 @@ record cited paper and thier citing paper, then:
 
 ## Recoring
 
+the docker is required, set up the grobid service, that can parse the `pdf` to string.
+
+```bash
+cd docker
+cp .env.local .env
+docker compose up -d
+```
+
 `rescore.ipynb` is the code, you can run it to get more rescoring by index.
 
 ## Analysis

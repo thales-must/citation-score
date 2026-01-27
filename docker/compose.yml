@@ -1,0 +1,6 @@
+services:
+  grobid:
+    image: lfoppiano/grobid:0.8.2.1-crf
+    container_name:  ${PROJECT_NAME}-grobid
+    ports: 
+      - 8070:8070
