@@ -43,3 +43,7 @@ record cited paper and thier citing paper, then:
 ## Recoring
 
 `rescore.ipynb` is the code, you can run it to get more rescoring by index.
+
+## Analysis
+
+`analysis.ipynb` is the code, you can run it to get experiments.
