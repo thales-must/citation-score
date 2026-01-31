@@ -52,6 +52,8 @@ docker compose up -d
 
 `rescore.ipynb` is the code, you can run it to get more rescoring by index.
 
+cited paper and citing paper need to download with pdf by oneself.
+
 ## Analysis
 
 `analysis.ipynb` is the code, you can run it to get experiments.
