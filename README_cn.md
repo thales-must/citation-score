@@ -8,9 +8,33 @@ python==3.13.9
 pip install -r requirements.txt
 ```
 
+## Docker 服务
+
+请按照 [Docker 官方安装指南](https://docs.docker.com/get-started/get-docker/) 安装并启动 Docker Desktop 或 Docker Engine。以下命令均在仓库根目录执行。
+
+复制共享环境变量模板。Python 脚本和 Docker Compose 共用根目录下的 `.env`：
+
+```bash
+cp .env.local .env
+```
+
+启动用于解析 PDF 的 GROBID：
+
+```bash
+docker compose --env-file .env -f docker/compose.yml up -d
+```
+
+如果本机没有 PostgreSQL 数据库，使用 `database` profile 启动可选数据库服务：
+
+```bash
+docker compose --env-file .env -f docker/compose.yml --profile database up -d
+```
+
+如果已经有 PostgreSQL 数据库，不需要启用该 profile；在 `.env` 中填写现有数据库的连接信息即可。模板预置了供本地运行使用的默认账号密码。容器数据库端口只绑定到 `127.0.0.1`，不要将其暴露到不可信网络。
+
 ## 创建环境变量
 
-modify `.env.local` name to `.env`
+Python 脚本和 Docker Compose 共用仓库根目录的 `.env`。按上面的命令从 `.env.local` 复制生成，并在 `.env` 中填写本机配置；保留 `.env.local` 模板。
 
 1. 基础信息
 
@@ -29,6 +53,8 @@ POSTGRES_PASSWORD | 密码
 POSTGRES_DB | 数据库名
 POSTGRES_HOST | 数据库地址
 POSTGRES_PORT | 端口
+
+使用已有 PostgreSQL 数据库时，`POSTGRES_HOST` 和 `POSTGRES_PORT` 应指向该数据库。启用可选 Docker 数据库时，也会使用此文件中的用户名、密码、数据库名和端口。
 
 3. 大模型
 

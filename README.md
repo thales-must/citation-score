@@ -8,9 +8,33 @@ Python 3.13.9
 pip install -r requirements.txt
 ```
 
+## Docker Services
+
+Install and start Docker Desktop or Docker Engine by following the [official Docker installation guide](https://docs.docker.com/get-started/get-docker/). Run the following commands from the repository root.
+
+Copy the shared environment template. The same `.env` file is used by Python and Docker Compose:
+
+```bash
+cp .env.local .env
+```
+
+Start GROBID, which parses PDFs:
+
+```bash
+docker compose --env-file .env -f docker/compose.yml up -d
+```
+
+If you do not already have a PostgreSQL database, start the optional database service with the `database` profile:
+
+```bash
+docker compose --env-file .env -f docker/compose.yml --profile database up -d
+```
+
+If you already have a PostgreSQL database, do not enable the profile; set its connection details in `.env`. The template includes default credentials for local development. The bundled database port is bound to `127.0.0.1` and should not be exposed to an untrusted network.
+
 ## Set Up Environment Variables
 
-Rename `.env.local` to `.env`.
+The repository-root `.env` is shared by the Python scripts and Docker Compose. Create it from `.env.local` as shown above. Keep the template in place and edit `.env` for your machine.
 
 ### 1. Basic Information
 
@@ -29,6 +53,8 @@ Rename `.env.local` to `.env`.
 | POSTGRES_DB | Database name |
 | POSTGRES_HOST | Database host |
 | POSTGRES_PORT | Port |
+
+`POSTGRES_HOST` and `POSTGRES_PORT` should point to your own database when you use an existing PostgreSQL instance. The optional Docker database uses the username, password, database name, and port from this same file.
 
 ### 3. Large Language Model
 

@@ -34,7 +34,7 @@ load_dotenv()
 
 def get_session():
     user = os.getenv("POSTGRES_USER")
-    password = os.getenv("POSTGRES_PASS")
+    password = os.getenv("POSTGRES_PASSWORD") or os.getenv("POSTGRES_PASS")
     db = os.getenv("POSTGRES_DB")
 
     engine = create_engine(
