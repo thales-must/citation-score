@@ -1,219 +1,138 @@
 # DCRE
 
-## Python Environment
+## Python Libraries
 
-Python version:
-
-```text
 Python 3.13.9
-```
-
-Install the required dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Environment Variables
+## Set Up Environment Variables
 
-Rename `.env.local` to `.env` and configure the following variables.
+Rename `.env.local` to `.env`.
 
-### 1. General Configuration
+### 1. Basic Information
 
-| Parameter      | Description                     |
-| -------------- | ------------------------------- |
-| `PROJECT_NAME` | Project name                    |
-| `SERVER_DIR`   | Host directory for Docker data  |
-| `SEED`         | Random seed for reproducibility |
+| Parameter | Description |
+|---|---|
+| PROJECT_NAME | Project name |
+| SERVER_DIR | Docker data directory |
+| SEED | Random seed for reproducibility |
 
-### 2. Database Configuration
+### 2. Database
 
-| Parameter           | Description              |
-| ------------------- | ------------------------ |
-| `POSTGRES_USER`     | PostgreSQL username      |
-| `POSTGRES_PASSWORD` | PostgreSQL password      |
-| `POSTGRES_DB`       | PostgreSQL database name |
-| `POSTGRES_PORT`     | PostgreSQL port          |
+| Parameter | Description |
+|---|---|
+| POSTGRES_USER | Username |
+| POSTGRES_PASSWORD | Password |
+| POSTGRES_DB | Database name |
+| POSTGRES_HOST | Database host |
+| POSTGRES_PORT | Port |
 
 ### 3. Large Language Model
 
-| Parameter   | Description      |
-| ----------- | ---------------- |
-| `LLM_KEY`   | LLM API key      |
-| `LLM_URL`   | LLM API base URL |
-| `LLM_MODEL` | LLM model name   |
+| Parameter | Description |
+|---|---|
+| LLM_KEY | LLM API key |
+| LLM_URL | LLM endpoint |
+| LLM_MODEL | Model |
 
-### 4. Scholarly Data Source
+### 4. Scholarly Database
 
-| Parameter | Description                                        |
-| --------- | -------------------------------------------------- |
-| `API_KEY` | Semantic Scholar API key for higher request limits |
+| Parameter | Description |
+|---|---|
+| API_KEY | Providing an API key allows requests to be made at shorter intervals. |
 
-An API key can be requested from the [Semantic Scholar website](https://www.semanticscholar.org/).
+You can apply for a key on the [Semantic Scholar website](https://www.semanticscholar.org).
 
 ## Seed Paper Collection
 
-This step requires a database connection and access to the Semantic Scholar API.
+A database connection and the **Semantic Scholar API** are required.
 
-Notebook:
+File: `collect.ipynb`
 
-```text
-collect.ipynb
-```
+Collect all papers published in 2024.
 
-The notebook first collects papers according to the specified publication type and year and stores them in the database.
+> The Semantic Scholar API does not provide an endpoint for the specific query we need. Therefore, the data must first be saved, after which the database can be used to retrieve the required seed papers.
 
-Seed papers are then selected using stratified sampling.
-
-For each seed paper, citing-paper records are retrieved, while only records containing both citation contexts and abstracts are temporarily retained before database insertion.
-
-> The Semantic Scholar API does not directly support the required stratified sampling procedure.
-> Candidate papers must therefore be stored first and subsequently sampled using database queries.
+Select 320 papers across 8 categories, with 40 papers per category. Within each category, rank the 40 papers by cross-encoder score and divide them into 4 stages of 10 papers each.
 
 ## Author Synchronization
 
-This step synchronizes the author information associated with the collected papers.
+Synchronize paper author information and import the authors’ previously published papers.
 
-Notebook:
+File: `author.ipynb`
 
-```text
-author.ipynb
+> Importing author information also imports papers published by those authors. Many of these papers were published before 2024, which allows us to check whether the authors have collaborated previously.
+
+## Seed Paper Citation Coverage Analysis
+
+File: `data_sampling.ipynb`
+
+## Citation Scoring
+
+Analyze the relevance of all records that contain citation contexts.
+
+File: `relevance.ipynb`
+
+> See the [Sentence Transformers website](https://sbert.net/).
+
+## Paper Selection
+
+Select 320 papers across 8 categories, with 40 papers per category. Within each category, rank the 40 papers by cross-encoder score and divide them into 4 stages of 10 papers each.
+
+File: `subset.ipynb`
+
+## Expert Labeling
+
+Have experts label the selected papers for use in subsequent experiments.
+
+Expert labeling file: `expert_label.xlsx`
+
+The `label.ipynb` notebook uses the expert labels to generate bar charts and heat maps.
+
+## Validation Against Expert Labels
+
+Run LLM scoring on all papers labeled by experts.
+
+File: *(not specified)*
+
+- Validate the embedding model
+- Select the LLM
+- Determine the weights
+- Determine the penalty coefficient for missing citation context
+
+File: `expert_evaluation.ipynb`
+
+## Rescoring
+
+Rescore the papers using their full-text PDFs, and generate figures and tables.
+
+File: `dao_rescore.ipynb`
+
+> When a special sample is identified, find the relevant paper PDF manually.
+
+## Independence
+
+Use expert information to determine one-hop and two-hop relationships, then calculate author independence scores.
+
+The information is recorded in `survey.xlsx`.
+
+After determining the independence coefficient, the full dataset can be processed:
+
+```bash
+python .\score_all_citations.py --write --max-llm-calls 10000
 ```
 
-## Citation Relevance Scoring
+> This updates the database. Each record stores the cross-encoder score, the LLM score, the abstract-based score when citation context is missing, and the author independence score.
 
-For each seed paper, this step retrieves all citing papers, stores the paper and citation records, and computes citation-level relevance scores.
+To review all author independence-related parameters, see `author_independence.ipynb`.
 
-Notebook:
+## Overall Score Experiment
 
-```text
-relevance.ipynb
-```
+Compare the overall scores and citation counts across the full dataset.
 
-> The semantic scoring implementation is based on [Sentence Transformers](https://sbert.net/).
+File: `count_score.ipynb`
 
-## Expert-Labeled Subset Construction
-
-This step selects 320 citation instances across eight research fields, with 40 instances from each field.
-
-The normalized cross-encoder scores are divided into four intervals, with an initial target of 10 instances per interval for each field.
-
-Notebook:
-
-```text
-subset.ipynb
-```
-
-## Expert Annotation
-
-The selected citation instances are independently annotated by experts and used as an external reference in subsequent experiments.
-
-Annotation file:
-
-```text
-expert_label.xlsx
-```
-
-The following notebook generates the expert-label distribution and inter-annotator agreement heatmap:
-
-```text
-label.ipynb
-```
-
-## Semantic Model Comparison
-
-This experiment compares the citation-level semantic models and generates score distributions, box plots, summary statistics, Spearman correlations, and correlation heatmaps.
-
-Notebook:
-
-```text
-sbert.ipynb
-```
-
-## LLM Model Selection
-
-The candidate LLMs are evaluated on the expert-labeled subset.
-
-Scoring notebook:
-
-```text
-llm_model_select.ipynb
-```
-
-The following notebook computes Spearman's correlation, MAE, and QWK and generates the corresponding distribution and box plots:
-
-```text
-plot_llm_select.ipynb
-```
-
-## Aggregation Weight Calibration
-
-This experiment evaluates different aggregation weights using Spearman's correlation, MAE, and QWK.
-
-Notebook:
-
-```text
-llm_weight.ipynb
-```
-
-## Context-Missing Penalty Calibration
-
-The following script computes abstract-only relevance scores between the citing and cited papers:
-
-```text
-script_abstract_score.py
-```
-
-> The script supports background execution and resumable processing.
-
-Candidate penalty factors are evaluated using Spearman's correlation, MAE, and QWK.
-
-Notebook:
-
-```text
-penalty.ipynb
-```
-
-## Citation Rescoring
-
-This experiment performs citation rescoring using the full-text PDFs of the citing and cited papers and generates the corresponding figures and tables.
-
-Notebook:
-
-```text
-rescore.ipynb
-```
-
-## Expert Survey on Author Independence
-
-Expert survey responses are used to determine author-independence scores for one-hop and two-hop coauthorship relationships.
-
-Survey data:
-
-```text
-inform.xlsx
-```
-
-The following notebook generates the survey-result distributions:
-
-```text
-inform.ipynb
-```
-
-## Paper-Level Aggregation Experiment
-
-This experiment aggregates citation-level scores and compares the resulting paper-level scores with citation counts.
-
-Notebook:
-
-```text
-paper.ipynb
-```
-
-The notebook supports:
-
-* Visualizing the overall comparison between citation counts and aggregated scores.
-* Examining the relative gap between the two measures.
-* Inspecting the cumulative scoring process of an individual paper.
-
-
+This notebook can be used to view an overall bar chart, examine the difference between citation counts and total scores, and inspect the scoring process for an individual paper.

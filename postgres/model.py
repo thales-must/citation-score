@@ -377,6 +377,10 @@ class Citation(Base):
 
     abstract_score: Mapped[float | None] = mapped_column(Float)
 
+    abstract_cross_score: Mapped[float | None] = mapped_column(Float)
+    
+    abstract_llm_score: Mapped[float | None] = mapped_column(Float)
+
     author_independence: Mapped[float | None] = mapped_column(Float)
 
     scored_at: Mapped[datetime | None] = mapped_column(DateTime)

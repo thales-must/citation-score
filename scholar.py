@@ -17,6 +17,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
+# Re-export for existing notebooks; standalone scorers can import the
+# lightweight citation_prompts module without loading models or plotting tools.
+from citation_prompts import (
+    SYSTEM_PROMPT, build_abstract_prompt, build_context_prompt,
+    build_prompt, build_scoring_prompt,
+)
+
 ContextInput = Union[str, Sequence[str]]
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
